@@ -1,7 +1,7 @@
 import plotly.graph_objs as go
 import plotly.plotly as py
-
-from Lol_Data.getdata import DataScraper
+import sys; sys.path.append("\Workplace\Working\Lol_DataAnalysis")
+from Lol_DataAnalysis.Data.getdata import DataScraper
 
 if __name__ == '__main__':
     labels = []
