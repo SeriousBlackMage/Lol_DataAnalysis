@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 class DataScraper:
-    # TODO fix your shit
+    # TODO make it Faster ._.
     def __init__(self, apikey):
         self.watcher = RiotWatcher(apikey)
         self.chNames = {
@@ -152,10 +152,12 @@ class DataScraper:
         data = self.watcher.summoner.by_name(region,name)
         self.currentData[name] = {'id':data['id'],'name':data['name'],'summonerLevel':data['summonerLevel']}
 
-    def getMatchData(self,name,region):
+    def getMatchData(
+            self,name,region,win=False,deaths=False,totalDamage=False,physicalDamage=False,magicDamage=False,
+            wardsPlaced=False,visionScore=False,goldEarned=False,kills=False,cs=False,pentaKills=False,gameCount=False,
+            totalDamagetaken=False
+    ):
         data = {}
-        ct = 0
-        ctt = 0
         matchHistory = self.watcher.match.matchlist_by_account(region,self.watcher.summoner.by_name(region,name)['accountId'])
         matchInf = self.watcher.match.by_id
         targetID = self.watcher.summoner.by_name(region,name)['accountId']
@@ -166,11 +168,26 @@ class DataScraper:
                     partID = j['participantId']
                     for z in matchInfo['participants']:
                         if(z['participantId']==partID):
-                            data[i['gameId']] = {'PhysicalDmgDealt':z['stats']['physicalDamageDealt'], 'MagicDamageDealt':z['stats']['magicDamageDealt']}
+                            data[i['gameId']] = {}#{'PhysicalDmgDealt':z['stats']['physicalDamageDealt'], 'MagicDamageDealt':z['stats']['magicDamageDealt']}
+                            if(win): data[i['gameId']]['win'] = z['stats']['win']
+                            if(deaths): data[i['gameId']]['deaths'] = z['stats']['deaths']
+                            if(totalDamage): data[i['gameId']]['totalDamage'] = z['stats']['totalDamageDealt']
+                            if(physicalDamage): data[i['gameId']]['physicalDamage'] = z['stats']['physicalDamageDealt']
+                            if(magicDamage): data[i['gameId']]['magicDamage'] = z['stats']['magicDamageDealt']
+                            if(wardsPlaced): data[i['gameId']]['wardsPlaced'] = z['stats']['wardsPlaced']
+                            if(visionScore): data[i['gameId']]['visionScore'] = z['stats']['visionScore']
+                            if(goldEarned): data[i['gameId']]['goldEarned'] = z['stats']['goldEarned']
+                            if(kills): data[i['gameId']]['kills'] = z['stats']['kills']
+                            if(cs): data[i['gameId']]['cs'] = z['stats']['neutralMinionsKilled']
+                            if(pentaKills): data[i['gameId']]['pentaKills'] = z['stats']['pentaKills']
+                            if(totalDamagetaken): data[i['gameId']]['totalDamageTaken'] = z['stats']['totalDamageTaken']
+        if(gameCount): data['GameCount'] = matchHistory['totalGames']
         return data
 
     def average(self,name,region):
         uData = self.getMatchData(name,region)
+        rData = {}
+
         return {
             'PhysicalDamage':(sum(b['PhysicalDmgDealt'] for a, b in uData.items())/len(uData))
             ,'MagicalDamage':(sum(b['MagicDamageDealt'] for a, b in uData.items())/len(uData))
@@ -179,4 +196,5 @@ class DataScraper:
 
 if __name__ == '__main__':
     root = DataScraper('RGAPI-1d3d34c6-5a35-48f7-bdc4-15b5e3a5af54')
-    print(root.average("an3craft",'euw1'))
+    mainData = root.getMatchData("an3craft",'euw1',deaths=True,kills=True,cs=True,pentaKills=True)
+
